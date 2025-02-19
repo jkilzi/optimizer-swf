@@ -1,7 +1,9 @@
 <?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+    xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.acme</groupId>
+    <groupId>org.jkilzi</groupId>
     <artifactId>optimizer</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <properties>
@@ -11,9 +13,10 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-        <quarkus.platform.version>3.8.4</quarkus.platform.version>
+        <quarkus.platform.version>3.8.6</quarkus.platform.version>
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.5.2</surefire-plugin.version>
+        <kie.version>10.0.0</kie.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -27,7 +30,7 @@
             <dependency>
                 <groupId>org.kie.kogito</groupId>
                 <artifactId>kogito-bom</artifactId>
-                <version>10.0.0</version>
+                <version>${kie.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -64,17 +67,21 @@
             <artifactId>kie-addons-quarkus-source-files</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.kie.sonataflow</groupId>
-            <artifactId>sonataflow-quarkus-devui</artifactId>
-            <version>10.0.0</version>
-        </dependency>
-        <dependency>
             <groupId>org.kie</groupId>
             <artifactId>kogito-addons-quarkus-data-index-inmemory</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.kie</groupId>
+            <artifactId>kogito-addons-quarkus-jobs-service-embedded</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.apache.kie.sonataflow</groupId>
             <artifactId>sonataflow-quarkus</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kie.sonataflow</groupId>
+            <artifactId>sonataflow-quarkus-devui</artifactId>
+            <version>${kie.version}</version>
         </dependency>
     </dependencies>
     <build>
@@ -126,7 +133,8 @@
                 </executions>
                 <configuration>
                     <systemPropertyVariables>
-                        <native.image.path>${project.build.directory}/${project.build.finalName}-runner</native.image.path>
+                        <native.image.path>
+                            ${project.build.directory}/${project.build.finalName}-runner</native.image.path>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <maven.home>${maven.home}</maven.home>
                     </systemPropertyVariables>
