@@ -1,0 +1,103 @@
+swagger: 2.0
+info:
+  title: Kubernetes Pod API
+  version: v1.29.10+67d3387
+  description: API for retrieving pod information and updating pod resources
+
+paths:
+  /api/v1/namespaces/{namespace}/pods/{name}:
+    get:
+      summary: Get information about a specific pod
+      parameters:
+        - name: namespace
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pod'
+        '404':
+          description: Pod not found
+    patch:
+      summary: Update pod resources and limits
+      parameters:
+        - name: namespace
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PodUpdate'
+      responses:
+        '200':
+          description: Successful update
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pod'
+        '400':
+          description: Invalid request
+        '404':
+          description: Pod not found
+
+components:
+  schemas:
+    Pod:
+      type: object
+      properties:
+        metadata:
+          type: object
+        spec:
+          type: object
+        status:
+          type: object
+    
+    PodUpdate:
+      type: object
+      properties:
+        spec:
+          type: object
+          properties:
+            containers:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  resources:
+                    type: object
+                    properties:
+                      limits:
+                        type: object
+                        properties:
+                          cpu:
+                            type: string
+                          memory:
+                            type: string
+                      requests:
+                        type: object
+                        properties:
+                          cpu:
+                            type: string
+                          memory:
+                            type: string

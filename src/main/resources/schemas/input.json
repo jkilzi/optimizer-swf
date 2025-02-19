@@ -1,0 +1,90 @@
+{
+  "$id": "classpath:/schemas/input.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Inputs",
+  "type": "object",
+  "properties": {
+    "clusterName": {
+      "title": "Cluster name",
+      "type": "string"
+    },
+    "clusterUuid": {
+      "title": "Cluster UUID",
+      "type": "string"
+    },
+    "project": {
+      "title": "Project",
+      "type": "string"
+    },
+    "workload": {
+      "title": "Workload",
+      "type": "string"
+    },
+    "container": {
+      "title": "Container",
+      "type": "string"
+    },
+    "limits": {
+      "title": "Limits",
+      "description": "Limits describes the maximum amount of compute resources allowed.",
+      "type": "object",
+      "properties": {
+        "cpu": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "memory": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        }
+      }
+    },
+    "requests": {
+      "title": "Requests",
+      "description": "Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value.",
+      "type": "object",
+      "properties": {
+        "cpu": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "memory": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "required": [
+    "clusterName",
+    "clusterUuid",
+    "project",
+    "workload",
+    "container",
+    "limits"
+  ]
+}
