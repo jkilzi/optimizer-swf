@@ -1,0 +1,8 @@
+{
+    "recommendations": [
+        "kie-group.swf-vscode-extension",
+        "redhat.vscode-xml",
+        "redhat.vscode-yaml",
+        "vscjava.vscode-java-pack"
+    ]
+}
