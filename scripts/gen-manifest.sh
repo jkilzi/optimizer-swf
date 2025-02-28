@@ -5,35 +5,51 @@ set -euo pipefail
 script_name="${BASH_SOURCE:-$0}"
 script_path=$(realpath "$script_name")
 scripts_dir_path=$(dirname "$script_path")
-workspace_dir_path=$(dirname "$scripts_dir_path")
+
+# shellcheck disable=SC1091
+source "${scripts_dir_path}/lib/_functions.sh"
 
 declare -A args
+args["apply"]=""
+args["no-persistence"]=""
+args["image"]=""
 args["registry"]="quay.io"
-args["organization"]=""
+args["project"]=""
 args["name"]=""
 args["tag"]="latest"
-args["no-persistence"]=""
-args["no-cleanup"]=""
+args["workflow-directory"]="$PWD"
 
 function parse_args {
-    while getopts ":r:o:n:t:hPC-:" opt; do
+    while getopts ":i:r:p:n:t:w:hP-:" opt; do
         case $opt in
             h) usage && exit ;;
             P) args["no-persistence"]="true" ;;
-            C) args["no-cleanup"]="true" ;;
+            i) args["image"]="$OPTARG" ;;
             r) args["registry"]="$OPTARG" ;;
-            o) args["organization"]="$OPTARG" ;;
+            p) args["project"]="$OPTARG" ;;
             n) args["name"]="$OPTARG" ;;
             t) args["tag"]="$OPTARG" ;;
+            w) args["workflow-directory"]="$OPTARG" ;;
             -)
                 case "${OPTARG}" in
-                    help) usage && exit ;;
-                    no-persistence) args["no-persistence"]="true" ;;
-                    no-cleanup) args["no-cleanup"]="true" ;;
-                    registry=*) args["container_registry"]="${OPTARG#*=}" ;;
-                    organization=*) args["organization"]="${OPTARG#*=}" ;;
-                    name=*) args["name"]="${OPTARG#*=}" ;;
-                    tag=*) args["tag"]="${OPTARG#*=}" ;;
+                    help)
+                        usage && exit ;;
+                    apply)
+                        args["apply"]="true" ;;
+                    no-persistence)
+                        args["no-persistence"]="true" ;;
+                    image=*)
+                        args["image"]="${OPTARG#*=}" ;;
+                    registry=*)
+                        args["registry"]="${OPTARG#*=}" ;;
+                    project=*)
+                        args["project"]="${OPTARG#*=}" ;;
+                    name=*)
+                        args["name"]="${OPTARG#*=}" ;;
+                    tag=*)
+                        args["tag"]="${OPTARG#*=}" ;;
+                    workflow-directory=*)
+                        args["workflow-directory"]="${OPTARG#*=}" ;;
                     *) echo "Invalid option: --$OPTARG" >&2; exit 1 ;;
                 esac
             ;;
@@ -42,8 +58,8 @@ function parse_args {
         esac
     done
 
-    if [[ -z "${args["organization"]:-}" ]]; then
-        echo "ERROR: A value for the --organization flag was not provided."
+    if [[ -z "${args["image"]:-}" ]] && [[ -z "${args["project"]:-}" ]]; then
+        echo "ERROR: A value for either the --project or --image flag must be provided."
         exit 4
     fi
 }
@@ -51,85 +67,73 @@ function parse_args {
 function usage {
     cat <<EOF
 Generates a list of Operator manifests for a SonataFlow project.
+
+The manifests are generated in the 'manifests' directory of the project.
+Use the --workflow-directory flag to specify the path to the directory containing the workflow's files.
 This script is a wrapper around the 'kn-workflow gen-manifest' command.
 
 Usage: 
-    $script_name --organization=<value> [flags]
+    $script_name [flags]
 
 Flags:
-    Required:
-        -o|--organization      Name of the organization in the container registry where the image will be stored.
-
-    Optional:
-        -r|--registry          The registry used to push the container image (default: 'quay.io').
-        -n|--name              The image name (default: the value contained in the 'id' property of the workflow file).
-        -t|--tag               The image tag (default: 'latest').
-        -P|--no-persistence    Skips adding persistence configuration to the sonataflow CR.
-        -C|--no-cleanup        Skips cleaning up the temporary directory at the end of this script.
+        -a|--apply                        Applies the generated manifests in the current namespace.
+        -i|--image string                 Full image name in the form of [registry]/[project]/[name]:[tag]
+                                          This flag is required when the registry, project, name and tag flags are not specified.
+        -r|--registry string              The containers registry to use
+                                          Overrides the [registry] part when the --image flag is specified
+                                          Example: 'quay.io'
+        -p|--project string               The project name in the containers registry
+                                          Overrides the [project] part when the --image flag is specified
+                                          Example: 'fedora' as in 'quay.io/fedora'
+        -n|--name string                  The image name
+                                          Overrides the [name] part when the --image flag is specified
+                                          Default: the workflow ID in the workflow file
+                                          Example: 'fedora-42' as in 'quay.io/fedora/fedora-42'
+        -t|--tag string                   The image tag
+                                          Default: 'latest'
+        -w|--workflow-directory string    Path to the directory containing the workflow's files (default: current directory).
+        -P|--no-persistence               Skips adding persistence configuration to the sonataflow CR.
 EOF
-}
-
-function is_macos {
-    [[ "$(uname)" == "Darwin" ]]
-}
-
-# A wrapper for the find command that uses the -E flag on macOS.
-# Extended regex (ERE) is not supported by default on macOS.
-function _find {
-    if is_macos; then
-        find -E "$@"
-    else
-        find "$@"
-    fi
 }
 
 parse_args "$@"
 
-workdir=$(mktemp -d -p "$workspace_dir_path/.tmp" -t 'workflow')
-echo "Created working directory: ${workdir}"
-cp -r "$workspace_dir_path"/{src,pom.xml} "${workdir}"
-
-res_dir_path="${workdir}/src/main/resources"
-echo "Switcing directories: $res_dir_path"
+res_dir_path="${args["workflow-directory"]}/src/main/resources"
 cd "$res_dir_path"
+echo "Switched directory: $res_dir_path"
 
-# Patch application.properties to enable Flyway migration at start
-echo -e "\nquarkus.flyway.migrate-at-start=true" >> application.properties
-
-workflow_file=$(_find . -type f -regex '.*\.sw\.ya?ml$')
-if [ -z "$workflow_file" ]; then
-  echo "ERROR: No workflow file found with *.sw.yaml or *.sw.yml suffix"
-  exit 5
+# Enable Flyway migration at start if necessary
+if grep -qv 'quarkus.flyway.migrate-at-start=true' application.properties; then
+    echo -e "\nquarkus.flyway.migrate-at-start=true" >> application.properties
 fi
 
-workflow_id=$(yq '.id | downcase' "$workflow_file" 2>/dev/null)
-if [ -z "$workflow_id" ]; then
-  echo "ERROR: The workflow file doesn't seem to have an 'id' property."
-  exit 6
-fi
-
+workflow_id=$(get_workflow_id "$res_dir_path")
+image="${args["image"]:-${args["registry"]}/${args["project"]}/${args["name"]:-$workflow_id}:${args["tag"]}}"
 kn-workflow gen-manifest \
-    -c "$workspace_dir_path/manifests" \
+    -c "${args["workflow-directory"]}/manifests" \
     --profile 'gitops' \
     --skip-namespace \
-    --image "${args["registry"]}/${args["organization"]}/${args["name"]:-$workflow_id}:${args["tag"]}"
+    --image "$image"
 
-cd "$workspace_dir_path"
-echo "Switched back to the project's root directory: $workspace_dir_path"
+if git status --short | grep -Eq 'application\.properties$'; then
+    git restore application.properties
+fi
+
+cd "${args["workflow-directory"]}"
+echo "Switched directory: ${args["workflow-directory"]}"
 
 # Find the sonataflow CR for the workflow
-sonataflow_cr=$(_find manifests -type f -name "*-sonataflow_${workflow_id}.yaml")
+sonataflow_cr=$(findw manifests -type f -name "*-sonataflow_${workflow_id}.yaml")
 
 if [[ -f secret.properties ]]; then
-    echo "Generating k8s secret for the workflow"
     yq --inplace ".spec.podTemplate.container.envFrom=[{\"secretRef\": { \"name\": \"${workflow_id}-creds\"}}]" "${sonataflow_cr}"
     kubectl create secret generic "${workflow_id}-creds" \
         --from-env-file=secret.properties \
         --dry-run=client -o=yaml > "manifests/00-secret_${workflow_id}.yaml"
+    echo "Generated k8s secret for the workflow"
 fi
 
 if [[ -z "${args["no-persistence"]:-}" ]]; then
-    echo "Adding persistence configuration to the sonataflow CR"
     yq --inplace ".spec |= (
         . + {
         \"persistence\": {
@@ -149,9 +153,10 @@ if [[ -z "${args["no-persistence"]:-}" ]]; then
         }
         }
     )" "${sonataflow_cr}"
+    echo "Added persistence configuration to the sonataflow CR"
 fi
 
-if [[ -z "${args["no-cleanup"]:-}" ]]; then
-    rm -rf "${workdir}"
-    echo "Removed working directory: ${workdir}"
+if [[ -n "${args["apply"]}" ]]; then
+    kubectl apply -f "${args["workflow-directory"]}/manifests"
+    echo "Applied the generated manifests"
 fi
