@@ -1,6 +1,0 @@
-*
-!docker/orchestrator.Dockerfile*
-!scripts/lib/**/*
-!scripts/quarkus-build.sh
-!src/**/*
-!LICENSE
