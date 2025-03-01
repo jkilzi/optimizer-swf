@@ -3,20 +3,20 @@ FROM registry.redhat.io/openshift-serverless-1/logic-swf-builder-rhel8:1.35.0-6 
 #ENV MAVEN_REPO_URL=https://maven.repository.redhat.com/earlyaccess/all
 
 ARG QUARKUS_EXTENSIONS="\
-    org.kie:kie-addons-quarkus-monitoring-sonataflow:10.0.0, \
-    org.kie:kogito-addons-quarkus-jobs-knative-eventing:10.0.0, \
-    org.kie:kie-addons-quarkus-persistence-jdbc:10.0.0, \
-    io.quarkus:quarkus-jdbc-postgresql:3.8.6.redhat-00004, \
-    io.quarkus:quarkus-agroal:3.8.6.redhat-00004"
+org.kie:kie-addons-quarkus-monitoring-sonataflow:10.0.0, \
+org.kie:kogito-addons-quarkus-jobs-knative-eventing:10.0.0, \
+org.kie:kie-addons-quarkus-persistence-jdbc:10.0.0, \
+io.quarkus:quarkus-jdbc-postgresql:3.8.6.redhat-00004, \
+io.quarkus:quarkus-agroal:3.8.6.redhat-00004"
 
 # Additional java/mvn arguments to pass to the builder.
 # This is a conventient way for passing build-time properties to Sonataflow and Quarkus.
 # Note that the 'maxYamlCodePoints' parameter contols the maximum input size for YAML files, set to 35000000 characters, which is ~33MB in UTF-8.  
 ARG MAVEN_ARGS_APPEND="\
-    -DmaxYamlCodePoints=35000000 \
-    -Dkogito.persistence.type=jdbc \
-    -Dquarkus.datasource.db-kind=postgresql \
-    -Dkogito.persistence.proto.marshaller=false"
+-DmaxYamlCodePoints=35000000 \
+-Dkogito.persistence.type=jdbc \
+-Dquarkus.datasource.db-kind=postgresql \
+-Dkogito.persistence.proto.marshaller=false"
 
 COPY --chown=1001 . .
 
