@@ -1,5 +1,5 @@
 *
-!scripts/docker/orchestrator.Dockerfile*
+!docker/orchestrator.Dockerfile*
 !scripts/lib/**/*
 !scripts/quarkus-build.sh
 !src/**/*
