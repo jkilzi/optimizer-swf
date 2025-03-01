@@ -97,7 +97,7 @@ commit_sha=$(git rev-parse --short=8 HEAD)
 image="${args["image"]:-${args["registry"]}/${args["project"]}/${args["name"]:-$workflow_id}:${args["tag"]:-$commit_sha}}"
 
 pocker build \
-    -f "$scripts_dir_path/docker/orchestrator.Dockerfile" \
+    -f "${args["workflow-directory"]}/docker/orchestrator.Dockerfile" \
     --ulimit nofile=4096:4096 \
     --platform linux/amd64 \
     --tag "${image}" \
