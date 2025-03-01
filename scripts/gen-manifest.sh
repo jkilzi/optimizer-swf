@@ -59,7 +59,7 @@ function parse_args {
     done
 
     if [[ -z "${args["image"]:-}" ]] && [[ -z "${args["project"]:-}" ]]; then
-        echo "ERROR: A value for either the --project or --image flag must be provided."
+        echo "ERROR: Missing --project or --image flags."
         exit 4
     fi
 }
@@ -68,31 +68,33 @@ function usage {
     cat <<EOF
 Generates a list of Operator manifests for a SonataFlow project.
 
-The manifests are generated in the 'manifests' directory of the project.
-Use the --workflow-directory flag to specify the path to the directory containing the workflow's files.
-This script is a wrapper around the 'kn-workflow gen-manifest' command.
-
 Usage: 
     $script_name [flags]
 
 Flags:
-        -a|--apply                        Applies the generated manifests in the current namespace.
-        -i|--image string                 Full image name in the form of [registry]/[project]/[name]:[tag]
-                                          This flag is required when the registry, project, name and tag flags are not specified.
-        -r|--registry string              The containers registry to use
-                                          Overrides the [registry] part when the --image flag is specified
-                                          Example: 'quay.io'
-        -p|--project string               The project name in the containers registry
-                                          Overrides the [project] part when the --image flag is specified
-                                          Example: 'fedora' as in 'quay.io/fedora'
-        -n|--name string                  The image name
-                                          Overrides the [name] part when the --image flag is specified
-                                          Default: the workflow ID in the workflow file
-                                          Example: 'fedora-42' as in 'quay.io/fedora/fedora-42'
-        -t|--tag string                   The image tag
-                                          Default: 'latest'
-        -w|--workflow-directory string    Path to the directory containing the workflow's files (default: current directory).
-        -P|--no-persistence               Skips adding persistence configuration to the sonataflow CR.
+    -a|--apply                        Applies the generated manifests in the current namespace.
+    -i|--image string                 Full image name in the form of [registry]/[project]/[name]:[tag]
+                                        Required when the registry, project, name and tag flags are not specified.
+    -n|--name string                  The image name
+                                        Overrides the [name] part when the --image flag is specified
+                                        Default: the workflow ID in the workflow file
+                                        Example: 'fedora-42' as in 'quay.io/fedora/fedora-42'
+    -p|--project string               The project name in the containers registry
+                                        Overrides the [project] part when the --image flag is specified
+                                        Example: 'fedora' as in 'quay.io/fedora'
+    -r|--registry string              The containers registry to use
+                                        Overrides the [registry] part when the --image flag is specified
+                                        Example: 'quay.io'
+    -t|--tag string                   The image tag
+                                        Default: 'latest'
+    -w|--workflow-directory string    Path to the directory containing the workflow's files (the 'src' directory).
+                                        Default: current directory
+    -P|--no-persistence               Skips adding persistence configuration to the sonataflow CR.
+
+Notes:
+    1. The project name or the image path must be specified using --project or --image flags correspondingly.
+    2. The manifests will be in 'manifests' beside 'src'.
+    3. This script is a wrapper around the 'kn-workflow gen-manifest' command.
 EOF
 }
 

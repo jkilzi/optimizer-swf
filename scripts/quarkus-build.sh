@@ -18,7 +18,6 @@ args["tag"]=""
 args["push"]=""
 args["workflow-directory"]="$PWD"
 
-
 function parse_args {
     while getopts ":i:n:r:p:t:w:h-:" opt; do
         case $opt in
@@ -56,7 +55,7 @@ function parse_args {
     done
 
     if [[ -z "${args["image"]:-}" ]] && [[ -z "${args["project"]:-}" ]]; then
-        echo "ERROR: A value for either the --project or --image flag must be provided."
+        echo "ERROR: Missing --project or --image flags."
         exit 4
     fi
 }
@@ -69,22 +68,25 @@ Usage:
     $script_name [flags]
 
 Flags:
-    -i|--image string          Full image name in the form of [registry]/[project]/[name]:[tag]
-                               This flag is required when the registry, project, name and tag flags are not specified.
-    -r|--registry string       The containers registry to use
-                               Overrides the [registry] part when the --image flag is specified
-                               Example: 'quay.io'
-    -p|--project string        The project name in the containers registry
-                               Overrides the [project] part when the --image flag is specified
-                               Example: 'fedora' as in 'quay.io/fedora'
-    -n|--name string           The image name
-                               Overrides the [name] part when the --image flag is specified
-                               Default: the workflow ID in the workflow file
-                               Example: 'fedora-42' as in 'quay.io/fedora/fedora-42'
-    -t|--tag string            The image tag
-                               Default: 'latest' and the first 8 characters of the current git commit hash
-    -w|--workflow-directory    The path to the directory containing the workflow's files
-       --push                  Pushes the image to the registry after building
+    -i|--image string           Full image name in the form of [registry]/[project]/[name]:[tag]
+                                    Required when the registry, project, name and tag flags are not specified.
+    -n|--name string            The image name
+                                    Overrides the [name] part when the --image flag is specified
+                                    Default: the workflow ID in the workflow file
+                                    Example: 'fedora-42' as in 'quay.io/fedora/fedora-42'
+    -p|--project string         The project name in the containers registry
+                                    Overrides the [project] part when the --image flag is specified
+                                    Example: 'fedora' as in 'quay.io/fedora'
+                                    Default: 'latest' and the first 8 characters of the current git commit hash
+    -r|--registry string        The containers registry to use
+                                    Overrides the [registry] part when the --image flag is specified
+                                    Example: 'quay.io'
+    -t|--tag string             The image tag
+    -w|--workflow-directory     Path to the directory containing the workflow's files (the 'src' directory).
+                                    Default: current directory
+       --push                   Pushes the image to the registry after building
+
+Note: The project name or the image path must be specified using --project or --image flags correspondingly.
 EOF
 }
 
