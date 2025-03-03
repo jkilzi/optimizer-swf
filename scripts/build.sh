@@ -33,7 +33,9 @@ Flags:
        --apply                        Applies the generated manifests in the current namespace.
        --push                         Pushes the image to the registry after building
 
-Note: The manifests will be in 'manifests' beside 'src'.
+Notes: 
+    1. The manifests will be in 'manifests' beside 'src'.
+    2. This script respects the 'QUARKUS_EXTENSIONS' and 'MAVEN_ARGS_APPEND' environment variables.
 EOF
 }
 
@@ -144,11 +146,36 @@ function build_image {
     local image_name="${args["image"]%:*}"
     local tag="${args["image"]#*:}"
 
-    # Build specifically for linux/amd64 so macos users with arm-based CPUs can also run this image.
+    # These add-ons enable the use of JDBC for persisting workflow states and correlation
+    # contexts in serverless workflow applications.
+    base_quarkus_extensions="\
+    org.kie:kie-addons-quarkus-persistence-jdbc:9.102.0.redhat-00005,\
+    io.quarkus:quarkus-jdbc-postgresql:3.8.6.redhat-00004,\
+    io.quarkus:quarkus-agroal:3.8.6.redhat-00004"
+
+    # The 'maxYamlCodePoints' parameter contols the maximum size for YAML input files. 
+    # Set to 35000000 characters which is ~33MB in UTF-8.  
+    base_maven_args_append="\
+    -DmaxYamlCodePoints=35000000 \
+    -Dkogito.persistence.type=jdbc \
+    -Dquarkus.datasource.db-kind=postgresql \
+    -Dkogito.persistence.proto.marshaller=false"
+    
+    if [[ -n "${QUARKUS_EXTENSIONS:-}" ]]; then
+        base_quarkus_extensions="${base_quarkus_extensions},${QUARKUS_EXTENSIONS}"
+    fi
+
+    if [[ -n "${MAVEN_ARGS_APPEND:-}" ]]; then
+        base_maven_args_append="${base_maven_args_append} ${MAVEN_ARGS_APPEND}"
+    fi
+
+    # Build specifically for linux/amd64 to ensure compatibility with OSL v1.35.0
     pocker_args=(
         -f="${args["workflow-directory"]}/docker/osl.Dockerfile"
         --platform='linux/amd64'
         --ulimit='nofile=4096:4096'
+        --build-arg="QUARKUS_EXTENSIONS=${base_quarkus_extensions}"
+        --build-arg="MAVEN_ARGS_APPEND=${base_maven_args_append}"
     )
     [[ -n "${args["builder-image"]:-}" ]] && pocker_args+=(--build-arg="BUILDER_IMAGE=${args["builder-image"]}")
     [[ -n "${args["runtime-image"]:-}" ]] && pocker_args+=(--build-arg="RUNTIME_IMAGE=${args["runtime-image"]}")
