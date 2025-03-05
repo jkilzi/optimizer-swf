@@ -195,7 +195,7 @@ function build_image {
 
     # Build specifically for linux/amd64 to ensure compatibility with OSL v1.35.0
     local pocker_args=(
-        -f="$script_dir_path/../docker/osl.Dockerfile"
+        -f="$script_dir_path/docker/osl.Dockerfile"
         --tag="${args["image"]}"
         --platform='linux/amd64'
         --ulimit='nofile=4096:4096'
