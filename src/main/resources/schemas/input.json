@@ -20,6 +20,10 @@
       "title": "Workload",
       "type": "string"
     },
+    "workloadType": {
+      "title": "Workload type",
+      "type": "string"
+    },
     "container": {
       "title": "Container",
       "type": "string"
@@ -84,6 +88,7 @@
     "clusterUuid",
     "project",
     "workload",
+    "workloadType",
     "container",
     "limits"
   ]
