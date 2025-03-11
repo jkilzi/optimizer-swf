@@ -3,9 +3,12 @@ specVersion: "0.8"
 id: optimizer
 name: Optimizer workflow
 description: Optimizes a cluster's workload resources
-dataInputSchema: 
+dataInputSchema:
   schema: schemas/input.json
   failOnValidationErrors: true
+extensions:
+  - extensionid: workflow-output-schema
+    outputSchema: schemas/output.json
 functions:
   - name: log
     operation: sysout
@@ -20,7 +23,7 @@ states:
     type: operation
     stateDataFilter:
       input: '{name: .workload, namespace: .project, resources: {requests: {cpu: .requests.cpu | sub(" #.*$"; ""), memory: .requests.memory | sub(" #.*$"; "")}, limits: {cpu: .limits.cpu | sub(" #.*$"; ""), memory: .limits.memory | sub(" #.*$"; "")}}}'
-      output: '{response: .response}'
+      output: '{result: .response.spec.template.spec.containers[0]}'
     actions:
       - functionRef:
           refName: updateDeployment
@@ -34,13 +37,12 @@ states:
                 value: "${ .resources }"
         actionDataFilter:
           toStateData: "${ .response }"
-    transition: Show response
-  - name: Show response
+    transition: Log result
+  - name: Log result
     type: operation
     actions:
       - functionRef:
           refName: log
           arguments:
-            message: "${ .response }"
-    end:
-      terminate: true
+            message: "${ .result }"
+    end: true
