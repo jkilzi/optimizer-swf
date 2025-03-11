@@ -3,19 +3,44 @@ specVersion: "0.8"
 id: optimizer
 name: Optimizer workflow
 description: Optimizes a cluster's workload resources
-dataInputSchema: schemas/input.json
-start: Echo workflow
+dataInputSchema: 
+  schema: schemas/input.json
+  failOnValidationErrors: true
 functions:
   - name: log
-    type: custom
     operation: sysout
+    type: custom
+  - name: listDeployments
+    operation: 'specs/openshift-deployments-openapi.yaml#listAppsV1NamespacedDeployment'
+  - name: updateDeployment
+    operation: 'specs/openshift-deployments-openapi.yaml#patchAppsV1NamespacedDeployment'
+start: Patch the workload resources
 states:
-  - name: Echo workflow
+  - name: Patch the workload resources
+    type: operation
+    stateDataFilter:
+      input: '{name: .workload, namespace: .project, resources: {requests: {cpu: .requests.cpu | sub(" #.*$"; ""), memory: .requests.memory | sub(" #.*$"; "")}, limits: {cpu: .limits.cpu | sub(" #.*$"; ""), memory: .limits.memory | sub(" #.*$"; "")}}}'
+      output: '{response: .response}'
+    actions:
+      - functionRef:
+          refName: updateDeployment
+          arguments:
+            # dryRun: "All" <-- Doesn't work!!!
+            namespace: "${ .namespace }"
+            name: "${ .name }"
+            payload:
+              - op: replace
+                path: /spec/template/spec/containers/0/resources
+                value: "${ .resources }"
+        actionDataFilter:
+          toStateData: "${ .response }"
+    transition: Show response
+  - name: Show response
     type: operation
     actions:
       - functionRef:
           refName: log
           arguments:
-            message: "."
+            message: "${ .response }"
     end:
       terminate: true
