@@ -19,7 +19,7 @@ This script performs the following tasks in this specific order:
 2. Builds the workflow image using podman or docker
 3. Optionally, deploys the application:
     - Pushes the workflow image to the container registry specified by the image path
-    - Applies the generated manifests using kubectl in the current k8s namespace
+    - Applies the generated manifests using oc (or kubectl) in the current (or specified) k8s namespace
 
 Usage: 
     $script_name [flags]
@@ -240,5 +240,5 @@ if [[ -n "${args["deploy"]}" ]]; then
     log_info "Pushing the workflow image to ${args["image"]%/*}"
     push
     log_info "Applying the generated manifests"
-    kubectl apply -f "${args["manifests-directory"]}"
+    koc apply -f "${args["manifests-directory"]}"
 fi

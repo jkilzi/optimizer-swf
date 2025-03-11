@@ -38,6 +38,10 @@ function pocker {
     $(command -v podman || command -v docker) "$@"
 }
 
+function koc {
+    $(command -v oc || command -v kubectl) "$@"
+}
+
 function assert_optarg_not_empty {
     local arg="$1"
 
