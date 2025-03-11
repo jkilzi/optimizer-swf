@@ -50,7 +50,7 @@ scripts/specs-generator.ts yaml > src/main/resources/specs/openshift-deployments
 or for JSON output
 
 ```shell script
-scripts/specs-generator.ts json > src/main/resources/specs/openshift-deployments-openapi.yaml
+scripts/specs-generator.ts json > src/main/resources/specs/openshift-deployments-openapi.json
 ```
 
 ## Build and deploy the application
