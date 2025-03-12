@@ -22,7 +22,7 @@ states:
   - name: Patch the workload resources
     type: operation
     stateDataFilter:
-      input: '{name: .workload, namespace: .project, resources: {requests: {cpu: .requests.cpu | sub(" #.*$"; ""), memory: .requests.memory | sub(" #.*$"; "")}, limits: {cpu: .limits.cpu | sub(" #.*$"; ""), memory: .limits.memory | sub(" #.*$"; "")}}}'
+      input: '{name: .workload, namespace: .project, resources: {requests: {cpu: .requests.cpu | gsub(" #.*$|^-$"; ""), memory: .requests.memory | gsub(" #.*$|^-$"; "")}, limits: {cpu: .limits.cpu | gsub(" #.*$|^-$"; ""), memory: .limits.memory | gsub(" #.*$|^-$"; "")}}}'
       output: '{result: .response.spec.template.spec.containers[0]}'
     actions:
       - functionRef:
@@ -34,7 +34,7 @@ states:
             payload:
               - op: replace
                 path: /spec/template/spec/containers/0/resources
-                value: "${ .resources }"
+                value: "${ .resources | walk(if type == \"object\" then with_entries(select(.value != \"\")) else . end) }"
         actionDataFilter:
           toStateData: "${ .response }"
     transition: Log result
