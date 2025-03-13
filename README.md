@@ -11,7 +11,7 @@ project and deployment name. The optimized resources values are provided by the
 ### Prerequisites:
 
 - Install `mvn` and `quarkus` CLIs
-- [Configure Maven with Red Hat and Maven Central repositories`](#configuring-maven)
+- [Configure Maven with Red Hat and Maven Central repositories](#configuring-maven)
 - Create a `.env` file at the project root directory and provide values for
   these two variables:
   ```sh
@@ -31,7 +31,7 @@ or
 mvn compile quarkus:dev
 ```
 
-> **_NOTE:_** Quarkus now ships with a Dev UI, which is available in dev mode
+> **_NOTE:_** Quarkus now ships with a Dev UI, which is available in dev-mode
 > only at http://localhost:8080/q/dev/.
 
 ## Generating the deployments OpenShift OpenAPI spec
@@ -53,7 +53,7 @@ or for JSON output
 scripts/specs-generator.ts json > src/main/resources/specs/openshift-deployments-openapi.json
 ```
 
-## Build and deploy the application
+## Build and deploy the application for the Red Hat Developer Hub workflow orchestrator plug-in
 
 ### Prerequisites
 
