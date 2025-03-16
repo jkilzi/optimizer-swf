@@ -41,6 +41,7 @@ nb-configuration.xml
 .env
 /.tmp
 /manifests
+/workflows
 
 # Plugin directory
 /.quarkus/cli/plugins/
