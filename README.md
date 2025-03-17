@@ -34,6 +34,29 @@ mvn compile quarkus:dev
 > **_NOTE:_** Quarkus now ships with a Dev UI, which is available in dev-mode
 > only at http://localhost:8080/q/dev/.
 
+## Build and deploy the application for the Red Hat Developer Hub workflow orchestrator plug-in
+
+### Prerequisites
+
+- `kn` and `kn-workflow`
+  ([Serverless workflow plugin for the Knative CLI](https://docs.openshift.com/serverless/1.35/install/installing-kn.html))
+- `yq`
+- `oc` (or `kubectl`)
+- Podman (or Docker)
+
+Execute:
+
+```shell script
+scripts/orchestrator-builder.sh \
+  --image=quay.io/acme/optimizer:8.8.8 \
+  --namespace=sonataflow-infra \
+  --deploy
+```
+
+Additional options are available, use `--help` to see the full list.\
+After the deployment is complete update the `optimizer-creds` k8s secret with
+the correct values for your environment.
+
 ## Generating the deployments OpenShift OpenAPI spec
 
 ### Prerequisites:
@@ -52,29 +75,6 @@ or for JSON output
 ```shell script
 scripts/specs-generator.ts json > src/main/resources/specs/openshift-deployments-openapi.json
 ```
-
-## Build and deploy the application for the Red Hat Developer Hub workflow orchestrator plug-in
-
-### Prerequisites
-
-- `kn` and `kn-workflow`
-  ([Serverless workflow plugin for the Knative CLI](https://docs.openshift.com/serverless/1.35/install/installing-kn.html))
-- `yq`
-- `oc` (or `kubectl`)
-- Podman (or Docker)
-
-Execute:
-
-```shell script
-scripts/orchestrator-builder.sh \
-  --image=quay.io/acme/optimizer:8.8.8 \
-  --namespace sonataflow-infra \
-  --deploy
-```
-
-Additional options are available, use `--help` to see the full list.\
-After the deployment is complete update the `optimizer-creds` k8s secret with
-the correct values for your environment.
 
 ## Packaging and running the application
 
