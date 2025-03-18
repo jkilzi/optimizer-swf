@@ -1,10 +1,27 @@
 # Optimizer serverless workflow
 
-This serverless workflow rightsizes a provided OpenShift workload based on its
-project and deployment name. The optimized resources values are provided by the
+This serverless workflow integrates with the [Resource optimization plug-in for Red Hat Developer Hub](https://github.com/backstage/community-plugins/tree/main/workspaces/redhat-resource-optimization) to seamlessly right-size deployments running on an OpenShift cluster. The recommended resource values are provided by the
 [Resource Optimization for OpenShift API](https://developers.redhat.com/api-catalog/api/cost-management#content-operations-group-Optimizations).
 
+## Diagram
 ![Workflow image](src/main/resources//optimizer.svg)
+
+## Workflow inputs
+| Field         | Title          | Type   | Description                                                                                                                              | Required |
+|---------------|----------------|--------|------------------------------------------------------------------------------------------------------------------------------------------|----------|
+| clusterName   | Cluster name   | string |                                                                                                                                            | Yes      |
+| clusterUuid   | Cluster UUID   | string |                                                                                                                                            | Yes      |
+| project       | Project        | string |                                                                                                                                            | Yes      |
+| workload      | Workload       | string |                                                                                                                                            | Yes      |
+| workloadType  | Workload type  | string |                                                                                                                                            | No       |
+| container     | Container      | string |                                                                                                                                            | Yes      |
+| limits        | Limits         | object | Limits describes the maximum amount of compute resources allowed.                                                                      | No      |
+| limits.cpu    |                | string/number |                                                                                                                                            | No       |
+| limits.memory |                | string/number |                                                                                                                                            | No       |
+| requests      | Requests       | object | Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. | No       |
+| requests.cpu  |                | string/number |                                                                                                                                            | No       |
+| requests.memory |             | string/number |                                                                                                                                            | No       |
+
 
 ## Running the application in dev mode
 
