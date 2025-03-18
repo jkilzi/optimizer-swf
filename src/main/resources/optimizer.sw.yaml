@@ -5,7 +5,7 @@ name: Optimizer workflow
 description: Optimizes a cluster's workload resources
 dataInputSchema:
   schema: schemas/input.json
-  failOnValidationErrors: true
+  failOnValidationErrors: false
 extensions:
   - extensionid: workflow-output-schema
     outputSchema: schemas/output.json
