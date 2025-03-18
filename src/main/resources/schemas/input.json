@@ -34,10 +34,12 @@
       "type": "object",
       "properties": {
         "cpu": {
-          "$ref": "#/definitions/io.k8s.apimachinery.pkg.api.resource.Quantity"
+          "title": "CPU",
+          "type": "string"
         },
         "memory": {
-          "$ref": "#/definitions/io.k8s.apimachinery.pkg.api.resource.Quantity"
+          "title": "Memory",
+          "type": "string"
         }
       }
     },
@@ -47,10 +49,12 @@
       "type": "object",
       "properties": {
         "cpu": {
-          "$ref": "#/definitions/io.k8s.apimachinery.pkg.api.resource.Quantity"
+          "title": "CPU",
+          "type": "string"
         },
         "memory": {
-          "$ref": "#/definitions/io.k8s.apimachinery.pkg.api.resource.Quantity"
+          "title": "Memory",
+          "type": "string"
         }
       }
     }
